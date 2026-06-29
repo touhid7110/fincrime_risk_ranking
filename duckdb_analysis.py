@@ -1,12 +1,12 @@
 import duckdb
 con = duckdb.connect("aml.duckdb")
-#con.execute("CREATE TABLE tx AS SELECT * FROM read_csv_auto('HI-Small_Trans_cleaned.csv', header=true)")
-print(con.execute("SELECT * FROM tx LIMIT 5").df())   # inspect the real header
-print(con.execute("SELECT COUNT(*) FROM tx").df())
+#con.execute("CREATE TABLEtransactions AS SELECT * FROM read_csv_auto('HI-Small_Trans_cleaned.csv', header=true)")
+print(con.execute("SELECT * FROM transactions LIMIT 5").df())   # inspect the real header
+print(con.execute("SELECT COUNT(*) FROM transactions").df())
 
 #find the percentage of transactions that are fraudulent
-#fraudulent_count = con.execute('SELECT COUNT(*) from tx WHERE is_laundering = 1').df().iloc[0, 0]
-#total_count = con.execute('SELECT COUNT (*) from tx').df().iloc[0, 0]
+#fraudulent_count = con.execute('SELECT COUNT(*) from ttransactions WHERE is_laundering = 1').df().iloc[0, 0]
+#total_count = con.execute('SELECT COUNT (*) from ttransactions').df().iloc[0, 0]
 #percentage = (fraudulent_count / total_count) * 100
 #print(f"Percentage of fraudulent transactions: {percentage:.2f}%")
 
@@ -26,7 +26,7 @@ con.execute('''
             COUNT(DISTINCT payment_currency)                                        AS sender_distinct_currencies,
             ROUND(SUM(CASE WHEN amount_paid % 1 = 0 THEN 1 ELSE 0 END)
                   * 100.0 / COUNT(*), 2)                                            AS sender_pct_round_amounts
-        FROM tx
+        FROM transactions
         GROUP BY from_account
     ),
 
@@ -42,7 +42,7 @@ con.execute('''
             COUNT(DISTINCT receiving_currency)                                      AS receiver_distinct_currencies,
             ROUND(SUM(CASE WHEN amount_received % 1 = 0 THEN 1 ELSE 0 END)
                   * 100.0 / COUNT(*), 2)                                            AS receiver_pct_round_amounts
-        FROM tx
+        FROM transactions
         GROUP BY to_account
     ),
 
@@ -58,7 +58,7 @@ con.execute('''
                     ORDER BY CAST(timestamp AS TIMESTAMP)
                     RANGE BETWEEN INTERVAL 1 DAY PRECEDING AND CURRENT ROW
                 ) AS tx_count_last_24h
-            FROM tx
+            FROM transactions
         )
         GROUP BY from_account
     )
